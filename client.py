@@ -2,6 +2,7 @@ import socket
 import threading
 import queue
 from protocol import encode_message, decode_messages, ENCODING
+import time
 
 class Client:
     def __init__(self, host = '127.0.0.1', port = 5555):
@@ -91,6 +92,9 @@ def run_cli():
                 
                 if m_type == "CHAT":
                     print(f"\r[{payload['nick']}]: {payload['text']}\n> ", end = "")
+                elif m_type == "HISTORY":
+                    for past in payload.get("messages", []):
+                        print(f"[{past['nick']}]: {past['text']}")
                 elif m_type == "SYSTEM":
                     print(f"\r[SYSTEM]: {payload['text']}\n> ", end = "")
                 elif m_type == "PONG":
@@ -103,6 +107,7 @@ def run_cli():
 
     threading.Thread(target = print_incoming, daemon = True).start()
 
+    time.sleep(0.6)
     print("Connected! Type a message or command ('/list', '/ping', '/quit').")
     try:
         while client.running:

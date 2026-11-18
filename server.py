@@ -8,6 +8,10 @@ PORT = 5555
 clients = {}
 clients_lock = threading.Lock()
 
+message_history = []
+history_lock = threading.Lock()
+MAX_HISTORY = 50
+
 def broadcast(message_bytes: bytes, sender_socket = None):
     with clients_lock:
         for client in clients:
@@ -86,11 +90,23 @@ def process_command(conn: socket.socket, addr, msg: dict):
             clients[conn] = nick
         print(f"[LOGIN] address: {addr} nick: '{nick}'")
         conn.sendall(encode_message("LOGIN_SUCCESS", {"nick": nick}))
+        with history_lock:
+            if message_history:
+                conn.sendall(encode_message("HISTORY", {"messages": message_history}))
+
         broadcast(encode_message("SYSTEM", {"text": f"{nick} connected to server."}), sender_socket=conn)
     elif msg_type == "CHAT":
         text = payload.get("text", "")
         nick = payload.get("nick", str(addr))
         print(f"[{nick}]: {text}")
+
+        chat_data = {"nick": nick, "text": text}
+
+        with history_lock:
+            message_history.append(chat_data)
+            if len(message_history) > MAX_HISTORY:
+                message_history.pop(0)
+
         out = encode_message("CHAT", {"nick": nick, "text": text})
         broadcast(out, sender_socket=conn)
 

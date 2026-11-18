@@ -79,6 +79,9 @@ class ChatApp:
             if m_type == "LOGIN_SUCCESS":
                 self.logged_in = True
                 self.write_line(f"Logged in successfully as {self.nick}!")
+            elif m_type == "HISTORY":
+                for past in payload.get("messages", []):
+                    self.write_line(f"[{past['nick']}]: {past['text']}")
                 self.write_line("Connected! Type a message or command ('/list', '/ping', '/quit').")
             elif m_type == "ERROR":
                 self.write_line(f"Server error: {payload.get('reason', 'Unknown error')}")
