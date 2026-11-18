@@ -6,7 +6,8 @@ class ChatApp:
     def __init__(self, root: tk.Tk):
         self.root = root
         self.root.title("Chat")
-        self.root.geometry("450x350")
+        self.root.geometry("800x800")
+        self.root.configure(bg="#D34F76")
 
         try:
             self.root.iconbitmap("info")
@@ -17,15 +18,17 @@ class ChatApp:
         self.logged_in = False
         self.nick = ""
 
-        self.entry = tk.Entry(root)
+        self.entry = tk.Entry(root, bg="#30223B", fg="#D34F76")
         self.entry.pack(side=tk.BOTTOM, padx=5, pady=5, fill=tk.X)
         self.entry.bind("<Return>", self.on_enter)
         self.entry.focus()
 
         self.root.protocol("WM_DELETE_WINDOW", self.on_close)
 
-        self.text_area = tk.Text(root, state="disabled", wrap=tk.WORD)
+        self.text_area = tk.Text(root, state="disabled", wrap=tk.WORD, bg="#241F31", fg="#c1381d")
         self.text_area.pack(padx=5, pady=5, fill=tk.BOTH, expand=True)
+
+        self.text_area.tag_config("my_msg", foreground="#D34F76")
 
         try:
             self.client.connect()
@@ -35,9 +38,9 @@ class ChatApp:
 
         self.root.after(50, self.check_queue)
 
-    def write_line(self, text: str):
+    def write_line(self, text: str, tag: str = None):
         self.text_area.config(state="normal")
-        self.text_area.insert(tk.END, text + "\n")
+        self.text_area.insert(tk.END, text + "\n", tag)
         self.text_area.see(tk.END)
         self.text_area.config(state="disabled")
 
@@ -64,7 +67,7 @@ class ChatApp:
         elif text == "/list":
             self.client.send("LIST")
         elif text.strip():
-            self.write_line(f"[{self.nick}]: {text}")
+            self.write_line(f"[{self.nick}]: {text}", "my_msg")
             self.client.send("CHAT", {"nick": self.nick, "text": text})
 
     def check_queue(self):
