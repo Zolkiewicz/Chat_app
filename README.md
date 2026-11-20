@@ -8,8 +8,8 @@ Projekt zawiera klienta terminalowego (CLI), klienta okienkowego (Tkinter GUI) o
 ## Struktura projektu
 
 * `protocol.py` - kodowanie (`encode_message`) i dekodowanie (`decode_messages`) wiadomości w formacie JSON zakończonym znakiem nowej linii (`\n`),
-* `server.py` - wielowątkowy serwer TCP obsługujący logowanie, historię wiadomości (do 50 wpisów), rozsyłanie komunikatów (`broadcast`) oraz komendy,
-* `client.py` - logika sieciowa klienta (`Client`) oparta na kolejce `queue.Queue()` i wątku odbiorczym oraz interfejs konsolowy (`run_cli`) z obsługą przerwań i zamykania.
+* `server.py` - wielowątkowy serwer TCP obsługujący logowanie, historię wiadomości (do 50 wpisów), rozsyłanie komunikatów (broadcast), komendy, bezpieczne zamykanie,
+* `client.py` - logika sieciowa klienta (Client) z ponawianiem połączenia (@retry z pakietu tenacity), kolejką queue.Queue() i wątkiem odbiorczym oraz interfejs konsolowy (run_cli) z obsługą przerwań i zamykania.
 * `clientGUI.py` - interfejs graficzny (`ChatApp`) zbudowany w `tkinter`, korzystający z tej samej klasy `Client`.
 
 ## Wymagania i zestawienie środowiska
@@ -17,6 +17,11 @@ Projekt zawiera klienta terminalowego (CLI), klienta okienkowego (Tkinter GUI) o
 * Python 3.10+
 * Moduły ze standardowej biblioteki Pythona: `socket`, `threading`, `queue`, `json`, `time`, `tkinter`, `asyncio`
 
+Instalacja zależności zewnętrznych:
+Bash
+```bash
+pip install tenacity 
+```
 ## Uruchomienie
 
 1. Uruchomienie serwera

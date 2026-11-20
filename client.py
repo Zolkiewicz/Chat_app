@@ -3,6 +3,7 @@ import threading
 import queue
 from protocol import encode_message, decode_messages, ENCODING
 import time
+from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_fixed
 
 class Client:
     def __init__(self, host = '127.0.0.1', port = 5555):
@@ -12,6 +13,12 @@ class Client:
         self.incoming_queue = queue.Queue()
         self.running = False
 
+    @retry(
+        stop=stop_after_attempt(3),
+        wait=wait_fixed(1),
+        retry=retry_if_exception_type(OSError),
+        reraise=True,
+    )
     def connect(self):
         self.sock.connect((self.host, self.port))
         self.running = True

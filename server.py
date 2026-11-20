@@ -1,6 +1,7 @@
 import socket
 import threading
 from protocol import encode_message, decode_messages, ENCODING
+import functools
 
 HOST = '127.0.0.1'
 PORT = 5555
@@ -11,6 +12,15 @@ clients_lock = threading.Lock()
 message_history = []
 history_lock = threading.Lock()
 MAX_HISTORY = 50
+
+def log_command(func):
+    @functools.wraps(func)
+    def wrapper(conn, addr, msg):
+        msg_type = msg.get("type")
+        if msg_type in ("LIST", "PING"):
+            print(f"[CALL] {func.__name__} ({msg_type})")
+        return func(conn, addr, msg)
+    return wrapper
 
 def broadcast(message_bytes: bytes, sender_socket = None):
     with clients_lock:
@@ -69,6 +79,7 @@ def shutdown_server(server_sock: socket.socket):
         pass
     print("[SHUTDOWN] Server closed.")
 
+@log_command
 def process_command(conn: socket.socket, addr, msg: dict):
     msg_type = msg.get("type")
     payload = msg.get("payload", {})
